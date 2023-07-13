@@ -7,8 +7,7 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 import java.util.Random;
 
-public class SimpleAsyncTask extends AsyncTask<Void, Integer, String> {
-
+public class SimpleAsyncTask extends AsyncTask <Void, Void, String> {
     private WeakReference<TextView> mTextView;
     private WeakReference<ProgressBar> mProgressBar;
 
@@ -21,40 +20,34 @@ public class SimpleAsyncTask extends AsyncTask<Void, Integer, String> {
     protected String doInBackground(Void... voids) {
         Random r = new Random();
         int n = r.nextInt(11);
+        int s = n * 200;
+        int progress = 0;
+        int sleepTime = s / 100;
 
-        int sleepTime = n * 200;
-        int progressStep = 10;
+        for (int i = 0; i < 100; i++) {
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            progress++;
+            publishProgress(progress);
+        }
 
         try {
-            for (int i = 0; i <= progressStep; i++) {
-                Thread.sleep(sleepTime / progressStep);
-                publishProgress((i * 100) / progressStep);
-            }
+            Thread.sleep(s - progress * sleepTime);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        return "Enfin réveillé après avoir dormi pendant " + sleepTime + " millisecondes !";
+        return "Enfin réveillé après avoir dormi pendant " + s + " millisecondes !";
     }
 
-    @Override
-    protected void onProgressUpdate(Integer... values) {
-        int progress = values[0];
-        ProgressBar progressBar = mProgressBar.get();
-        if (progressBar != null) {
-            progressBar.setProgress(progress);
-        }
+    private void publishProgress(int progress) {
+        mProgressBar.get().setProgress(progress);
     }
-
-    @Override
     protected void onPostExecute(String result) {
-        TextView textView = mTextView.get();
-        if (textView != null) {
-            textView.setText(result);
-        }
-        ProgressBar progressBar = mProgressBar.get();
-        if (progressBar != null) {
-            progressBar.setProgress(0);
-        }
+        mTextView.get().setText(result);
     }
 }
